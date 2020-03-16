@@ -5,9 +5,9 @@
     </div>
     <!-- Header -->
     <div class="overflow-hidden rounded">
-      <div class="flex items-center justify-center bg-gray-300 py-1">
+      <div class="flex items-center justify-center bg-gray-300 p-1">
         <h2
-          class="flex justify-center items-center text-xs text-center text-gray-900"
+          class="flex justify-center items-center m-auto text-xs text-center text-gray-900"
         >
           <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" title="Corona">
             <path
@@ -16,6 +16,20 @@
           </svg>
           <span class="ml-1">COVID-19</span>
         </h2>
+        <button
+          class="text-gray-700 appearance-none outline-none focus:shadow-outline"
+          title="Refresh"
+        >
+          <svg
+            class="w-4 h-4 fill-current"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+          >
+            <path
+              d="M5.516 14.224c-2.262-2.432-2.222-6.244.128-8.611a6.074 6.074 0 013.414-1.736L8.989 1.8a8.112 8.112 0 00-4.797 2.351c-3.149 3.17-3.187 8.289-.123 11.531l-1.741 1.752 5.51.301-.015-5.834-2.307 2.323zm6.647-11.959l.015 5.834 2.307-2.322c2.262 2.434 2.222 6.246-.128 8.611a6.07 6.07 0 01-3.414 1.736l.069 2.076a8.122 8.122 0 004.798-2.35c3.148-3.172 3.186-8.291.122-11.531l1.741-1.754-5.51-.3z"
+            />
+          </svg>
+        </button>
       </div>
       <!-- Main -->
       <div class="px-6 py-4 bg-white">
@@ -86,7 +100,7 @@
         <p class="text-xs underline">Bangladesh</p>
         <button
           class="appearance-none outline-none focus:shadow-outline"
-          title="Refresh"
+          title="Quit"
         >
           <svg
             class="w-4 h-4 fill-current"
@@ -94,7 +108,7 @@
             viewBox="0 0 20 20"
           >
             <path
-              d="M5.516 14.224c-2.262-2.432-2.222-6.244.128-8.611a6.074 6.074 0 013.414-1.736L8.989 1.8a8.112 8.112 0 00-4.797 2.351c-3.149 3.17-3.187 8.289-.123 11.531l-1.741 1.752 5.51.301-.015-5.834-2.307 2.323zm6.647-11.959l.015 5.834 2.307-2.322c2.262 2.434 2.222 6.246-.128 8.611a6.07 6.07 0 01-3.414 1.736l.069 2.076a8.122 8.122 0 004.798-2.35c3.148-3.172 3.186-8.291.122-11.531l1.741-1.754-5.51-.3z"
+              d="M10 1.6a8.4 8.4 0 100 16.8 8.4 8.4 0 000-16.8zm4.789 11.461L13.06 14.79 10 11.729l-3.061 3.06L5.21 13.06 8.272 10 5.211 6.939 6.94 5.211 10 8.271l3.061-3.061 1.729 1.729L11.728 10l3.061 3.061z"
             />
           </svg>
         </button>

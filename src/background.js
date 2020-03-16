@@ -1,6 +1,7 @@
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import path from "path";
+import { app, protocol, BrowserWindow, Tray } from "electron";
 import {
   createProtocol,
   installVueDevtools
@@ -10,6 +11,10 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
+let tray;
+
+// Don't show the app in the doc
+app.dock.hide();
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -21,8 +26,13 @@ makeSingleInstance();
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 320,
+    height: 560,
+    show: false,
+    frame: false,
+    fullscreenable: false,
+    resizable: false,
+    transparent: true,
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/configuration.html#node-integration for more info
@@ -42,6 +52,10 @@ function createWindow() {
 
   win.on("closed", () => {
     win = null;
+  });
+
+  win.on("blur", () => {
+    if (!win.webContents.isDevToolsOpened()) win.hide();
   });
 }
 
@@ -79,6 +93,7 @@ app.on("ready", async () => {
       console.error("Vue Devtools failed to install:", e.toString());
     }
   }
+  createTray();
   createWindow();
 });
 
@@ -116,4 +131,36 @@ function makeSingleInstance() {
       win.focus();
     }
   });
+}
+
+function createTray() {
+  // eslint-disable-next-line no-undef
+  tray = new Tray(path.join(__static, "img/corona.png"));
+  tray.setToolTip("Corona - COVID-19");
+  tray.on("click", () => toggleWindow());
+}
+
+function toggleWindow() {
+  win.isVisible() ? win.hide() : showWindow();
+}
+
+function showWindow() {
+  const position = getWindowPosition();
+  win.setPosition(position.x, position.y, false);
+  win.show();
+}
+
+function getWindowPosition() {
+  const windowBounds = win.getBounds();
+  const trayBounds = tray.getBounds();
+
+  // Center window horizontally below the tray icon
+  const x = Math.round(
+    trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2
+  );
+
+  // Position window 4 pixels vertically below the tray icon
+  const y = Math.round(trayBounds.y + trayBounds.height + 4);
+
+  return { x, y };
 }

@@ -16,6 +16,8 @@ protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } }
 ]);
 
+makeSingleInstance();
+
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
@@ -93,4 +95,25 @@ if (isDevelopment) {
       app.quit();
     });
   }
+}
+
+// Make this app a single instance app.
+//
+// The main window will be restored and focused instead of a second window
+// opened when a person attempts to launch a second instance.
+//
+// Returns true if the current version of the app should quit instead of
+// launching.
+function makeSingleInstance() {
+  if (process.mas) return;
+
+  app.requestSingleInstanceLock();
+
+  app.on("second-instance", () => {
+    if (win) {
+      if (win.isMinimized()) win.restore();
+
+      win.focus();
+    }
+  });
 }

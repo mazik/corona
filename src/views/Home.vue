@@ -1,10 +1,10 @@
 <template>
-  <div class="max-w-xs shadow-lg">
+  <div class="mt-2 bg-transparent">
     <div class="relative flex justify-center">
       <div class="bg-gray-300 absolute w-3 h-3 transform rotate-45 -mt-1"></div>
     </div>
     <!-- Header -->
-    <div class="overflow-hidden rounded bg-white">
+    <div class="overflow-hidden rounded">
       <div class="flex items-center justify-center bg-gray-300 py-1">
         <h2
           class="flex justify-center items-center text-xs text-center text-gray-900"
@@ -18,7 +18,7 @@
         </h2>
       </div>
       <!-- Main -->
-      <div class="px-6 py-4">
+      <div class="px-6 py-4 bg-white">
         <vc-donut
           :size="150"
           unit="px"

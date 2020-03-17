@@ -3,8 +3,8 @@
     <div class="relative flex justify-center">
       <div class="bg-gray-300 absolute w-3 h-3 transform rotate-45 -mt-1"></div>
     </div>
-    <!-- Header -->
     <div class="overflow-hidden rounded">
+      <!-- Header -->
       <div class="flex items-center justify-center bg-gray-300 p-1">
         <h2
           class="flex justify-center items-center m-auto text-xs text-center text-gray-900"
@@ -32,7 +32,21 @@
         </button>
       </div>
       <!-- Main -->
-      <div class="px-6 py-4 bg-white">
+      <div
+        v-if="loading"
+        class="flex justify-center items-center h-screen bg-white text-gray-700"
+      >
+        <svg
+          class="w-4 h-4 fill-current animation-spin animation-linear"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M5.516 14.224c-2.262-2.432-2.222-6.244.128-8.611a6.074 6.074 0 013.414-1.736L8.989 1.8a8.112 8.112 0 00-4.797 2.351c-3.149 3.17-3.187 8.289-.123 11.531l-1.741 1.752 5.51.301-.015-5.834-2.307 2.323zm6.647-11.959l.015 5.834 2.307-2.322c2.262 2.434 2.222 6.246-.128 8.611a6.07 6.07 0 01-3.414 1.736l.069 2.076a8.122 8.122 0 004.798-2.35c3.148-3.172 3.186-8.291.122-11.531l1.741-1.754-5.51-.3z"
+          />
+        </svg>
+      </div>
+      <div v-else class="px-6 py-4 bg-white">
         <vc-donut
           :size="150"
           unit="px"
@@ -40,11 +54,14 @@
           has-legend
           legend-placement="bottom"
           :sections="sections"
-          :total="100"
+          :total="total"
           :start-angle="0"
           @section-click="handleSectionClick"
         >
-          <h2 class="text-gray-900 text-base">163037</h2>
+          <h2
+            class="text-gray-900 text-base"
+            v-text="total.toLocaleString()"
+          ></h2>
           <h3 class="text-gray-600">Cases reported</h3>
         </vc-donut>
 
@@ -97,7 +114,7 @@
             />
           </svg>
         </button>
-        <p class="text-xs underline">Bangladesh</p>
+        <p class="text-xs underline" v-text="country"></p>
         <button
           class="appearance-none outline-none focus:shadow-outline"
           title="Quit"
@@ -118,21 +135,91 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "Home",
   data() {
     return {
-      sections: [
-        { label: "Deaths: 3491", value: 25 },
-        { label: "Recovered: 57376", value: 25 },
-        { label: "Confirmed: 102170", value: 25 }
-      ]
+      loading: true,
+      confirmed: null,
+      recovered: null,
+      deaths: null,
+      country: null,
+      sections: [],
+      total: 0
     };
   },
+
+  created() {
+    if (this.isOnline()) {
+      this.getCountry().then(country => {
+        this.country = country;
+
+        this.getCoronaOverview(country)
+          .then(overview => {
+            this.deaths = overview.deaths.value;
+            this.confirmed = overview.confirmed.value;
+            this.recovered = overview.recovered.value;
+          })
+          .then(() => {
+            this.total = this.deaths + this.confirmed + this.recovered;
+
+            this.sections = [
+              {
+                label: `Deaths: ${this.deaths}`,
+                value: this.deaths
+              },
+              {
+                label: `Confirmed: ${this.confirmed}`,
+                value: this.confirmed
+              },
+              {
+                label: `Recovered: ${this.recovered}`,
+                value: this.recovered
+              }
+            ];
+
+            this.loading = false;
+          });
+      });
+    }
+  },
+
   methods: {
     handleSectionClick(section, event) {
       console.log(`${section.label} clicked. ${event}`);
+    },
+
+    isOnline() {
+      return window.navigator.onLine ? true : false;
+    },
+
+    getCountry() {
+      return axios
+        .get("http://ip-api.com/json")
+        .then(response => response.data.country)
+        .catch(error => alert(error));
+    },
+
+    getCoronaOverview(country) {
+      return axios
+        .get(
+          `https://covid19.mathdro.id/api/countries/${country.toLowerCase()}`
+        )
+        .then(overview => overview.data)
+        .catch(error => alert(error));
     }
   }
 };
 </script>
+
+<style lang="scss">
+.cdc-legend {
+  @apply flex-col;
+
+  > span {
+    @apply text-sm text-gray-700;
+  }
+}
+</style>

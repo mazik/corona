@@ -56,7 +56,6 @@
           :sections="sections"
           :total="total"
           :start-angle="0"
-          @section-click="handleSectionClick"
         >
           <h2
             class="text-gray-900 text-base"
@@ -136,8 +135,7 @@
 </template>
 
 <script>
-import axios from "axios";
-import { ipcRenderer } from "electron";
+import { ipcRenderer, dialog } from "electron";
 
 export default {
   name: "Home",
@@ -154,45 +152,43 @@ export default {
   },
 
   created() {
-    if (this.isOnline()) {
-      this.getCountry().then(country => {
-        this.country = country;
+    ipcRenderer.send("online-status", this.isOnline());
 
-        this.getCoronaOverview(country)
-          .then(overview => {
-            this.deaths = overview.deaths.value;
-            this.confirmed = overview.confirmed.value;
-            this.recovered = overview.recovered.value;
-          })
-          .then(() => {
-            this.total = this.deaths + this.confirmed + this.recovered;
+    this.getCoronaData()
+      .then(response => {
+        this.total = response.total;
 
-            this.sections = [
-              {
-                label: `Deaths: ${this.deaths}`,
-                value: this.deaths
-              },
-              {
-                label: `Confirmed: ${this.confirmed}`,
-                value: this.confirmed
-              },
-              {
-                label: `Recovered: ${this.recovered}`,
-                value: this.recovered
-              }
-            ];
+        this.deaths = response.deaths;
+        this.confirmed = response.confirmed;
+        this.recovered = response.recovered;
 
-            this.loading = false;
-          });
-      });
-    }
+        this.country = response.country;
+      })
+      .then(() => {
+        this.sections = [
+          {
+            label: `Deaths: ${this.deaths}`,
+            value: this.deaths
+          },
+          {
+            label: `Confirmed: ${this.confirmed}`,
+            value: this.confirmed
+          },
+          {
+            label: `Recovered: ${this.recovered}`,
+            value: this.recovered
+          }
+        ];
+      })
+      .then(() => (this.loading = false))
+      .catch(error =>
+        dialog.showErrorBox(
+          `An error occurred during data management. ${error.toString()}`
+        )
+      );
   },
 
   methods: {
-    handleSectionClick(section, event) {
-      console.log(`${section.label} clicked. ${event}`);
-    },
-
     close() {
       ipcRenderer.send("close-app");
     },
@@ -201,20 +197,13 @@ export default {
       return window.navigator.onLine ? true : false;
     },
 
-    getCountry() {
-      return axios
-        .get("http://ip-api.com/json")
-        .then(response => response.data.country)
-        .catch(error => alert(error));
-    },
-
-    getCoronaOverview(country) {
-      return axios
-        .get(
-          `https://covid19.mathdro.id/api/countries/${country.toLowerCase()}`
-        )
-        .then(overview => overview.data)
-        .catch(error => alert(error));
+    getCoronaData() {
+      return new Promise((resolve, reject) => {
+        ipcRenderer.on("corona-data", (event, data) => {
+          resolve(data);
+          reject(new Error());
+        });
+      });
     }
   }
 };

@@ -1,7 +1,8 @@
 "use strict";
 
 import path from "path";
-import { app, protocol, BrowserWindow, Tray, ipcMain } from "electron";
+import axios from "axios";
+import { app, protocol, BrowserWindow, Tray, ipcMain, dialog } from "electron";
 import {
   createProtocol,
   installVueDevtools
@@ -101,6 +102,31 @@ ipcMain.on("close-app", () => {
   app.quit();
 });
 
+ipcMain.on("online-status", (event, isOnline) => {
+  let data = {};
+
+  if (isOnline) {
+    getCountry()
+      .then(country => {
+        data.country = country;
+      })
+      .then(() =>
+        getCoronaOverview(data.country)
+          .then(overview => {
+            data.deaths = overview.deaths.value;
+            data.confirmed = overview.confirmed.value;
+            data.recovered = overview.recovered.value;
+          })
+          .then(() => {
+            data.total = data.deaths + data.confirmed + data.recovered;
+          })
+      )
+      .then(() => {
+        event.reply("corona-data", data);
+      });
+  }
+});
+
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
   if (process.platform === "win32") {
@@ -167,4 +193,26 @@ function getWindowPosition() {
   const y = Math.round(trayBounds.y + trayBounds.height + 4);
 
   return { x, y };
+}
+
+function getCountry() {
+  return axios
+    .get("http://ip-api.com/json")
+    .then(response => response.data.country)
+    .catch(error =>
+      dialog.showErrorBox(
+        `An error occurred during Country detection. ${error.toString()}`
+      )
+    );
+}
+
+function getCoronaOverview(country) {
+  return axios
+    .get(`https://covid19.mathdro.id/api/countries/${country.toLowerCase()}`)
+    .then(overview => overview.data)
+    .catch(error =>
+      dialog.showErrorBox(
+        `An error occurred during Corona detection. ${error.toString()}`
+      )
+    );
 }

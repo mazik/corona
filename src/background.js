@@ -2,6 +2,7 @@
 
 import path from "path";
 import axios from "axios";
+import settings from "electron-settings";
 import { app, protocol, BrowserWindow, Tray, ipcMain, dialog } from "electron";
 import {
   createProtocol,
@@ -122,8 +123,25 @@ ipcMain.on("online-status", (event, isOnline) => {
           })
       )
       .then(() => {
+        settings.setAll(data);
+      })
+      .then(() => {
         event.reply("corona-data", data);
       });
+  } else {
+    if (settings.has("country")) {
+      data = settings.getAll();
+
+      event.reply("corona-data", data);
+    } else {
+      data.country = "Mars";
+      data.deaths = 0;
+      data.confirmed = 0;
+      data.recovered = 0;
+      data.total = 0;
+
+      event.reply("corona-data", data);
+    }
   }
 });
 

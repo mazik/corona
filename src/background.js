@@ -1,7 +1,7 @@
 "use strict";
 
 import path from "path";
-import { app, protocol, BrowserWindow, Tray } from "electron";
+import { app, protocol, BrowserWindow, Tray, ipcMain } from "electron";
 import {
   createProtocol,
   installVueDevtools
@@ -95,6 +95,10 @@ app.on("ready", async () => {
   }
   createTray();
   createWindow();
+});
+
+ipcMain.on("close-app", () => {
+  app.quit();
 });
 
 // Exit cleanly on request from parent process in development mode.

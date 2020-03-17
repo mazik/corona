@@ -116,6 +116,7 @@
         </button>
         <p class="text-xs underline" v-text="country"></p>
         <button
+          @click="close()"
           class="appearance-none outline-none focus:shadow-outline"
           title="Quit"
         >
@@ -136,6 +137,7 @@
 
 <script>
 import axios from "axios";
+import { ipcRenderer } from "electron";
 
 export default {
   name: "Home",
@@ -189,6 +191,10 @@ export default {
   methods: {
     handleSectionClick(section, event) {
       console.log(`${section.label} clicked. ${event}`);
+    },
+
+    close() {
+      ipcRenderer.send("close-app");
     },
 
     isOnline() {

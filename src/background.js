@@ -1,5 +1,7 @@
 "use strict";
 
+/* global __static */
+
 import path from "path";
 import axios from "axios";
 import settings from "electron-settings";
@@ -148,7 +150,6 @@ function makeSingleInstance() {
 }
 
 function createTray() {
-  // eslint-disable-next-line no-undef
   tray = new Tray(path.join(__static, "img/corona.png"));
   tray.setToolTip("Corona - COVID-19");
   tray.on("click", () => toggleWindow());

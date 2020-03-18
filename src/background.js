@@ -104,45 +104,11 @@ ipcMain.on("close-app", () => {
 });
 
 ipcMain.on("online-status", (event, isOnline) => {
-  let data = {};
+  dataManipulate(event, "corona-data", isOnline);
+});
 
-  if (isOnline) {
-    getCountry()
-      .then(country => {
-        data.country = country;
-      })
-      .then(() =>
-        getCoronaOverview(data.country)
-          .then(overview => {
-            data.deaths = overview.deaths.value;
-            data.confirmed = overview.confirmed.value;
-            data.recovered = overview.recovered.value;
-          })
-          .then(() => {
-            data.total = data.deaths + data.confirmed + data.recovered;
-          })
-      )
-      .then(() => {
-        settings.setAll(data);
-      })
-      .then(() => {
-        event.reply("corona-data", data);
-      });
-  } else {
-    if (settings.has("country")) {
-      data = settings.getAll();
-
-      event.reply("corona-data", data);
-    } else {
-      data.country = "Mars";
-      data.deaths = 0;
-      data.confirmed = 0;
-      data.recovered = 0;
-      data.total = 0;
-
-      event.reply("corona-data", data);
-    }
-  }
+ipcMain.on("refresh", (event, isOnline) => {
+  dataManipulate(event, "refresh-back", isOnline);
 });
 
 // Exit cleanly on request from parent process in development mode.
@@ -233,4 +199,46 @@ function getCoronaOverview(country) {
         `An error occurred during Corona detection. ${error.toString()}`
       )
     );
+}
+
+function dataManipulate(event, channel, online) {
+  let data = {};
+
+  if (online) {
+    getCountry()
+      .then(country => {
+        data.country = country;
+      })
+      .then(() =>
+        getCoronaOverview(data.country)
+          .then(overview => {
+            data.deaths = overview.deaths.value;
+            data.confirmed = overview.confirmed.value;
+            data.recovered = overview.recovered.value;
+          })
+          .then(() => {
+            data.total = data.deaths + data.confirmed + data.recovered;
+          })
+      )
+      .then(() => {
+        settings.setAll(data);
+      })
+      .then(() => {
+        event.reply(channel, data);
+      });
+  } else {
+    if (settings.has("country")) {
+      data = settings.getAll();
+
+      event.reply(channel, data);
+    } else {
+      data.country = "Mars";
+      data.deaths = 0;
+      data.confirmed = 0;
+      data.recovered = 0;
+      data.total = 0;
+
+      event.reply(channel, data);
+    }
+  }
 }

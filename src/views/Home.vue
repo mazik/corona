@@ -17,16 +17,21 @@
           <span class="ml-1">COVID-19</span>
         </h2>
         <button
+          @click="refresh()"
           class="text-gray-700 appearance-none outline-none focus:shadow-outline"
           title="Refresh"
         >
           <svg
             class="w-4 h-4 fill-current"
+            :class="{
+              'animation-spin': loading,
+              'animation-linear': loading
+            }"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
           >
             <path
-              d="M5.516 14.224c-2.262-2.432-2.222-6.244.128-8.611a6.074 6.074 0 013.414-1.736L8.989 1.8a8.112 8.112 0 00-4.797 2.351c-3.149 3.17-3.187 8.289-.123 11.531l-1.741 1.752 5.51.301-.015-5.834-2.307 2.323zm6.647-11.959l.015 5.834 2.307-2.322c2.262 2.434 2.222 6.246-.128 8.611a6.07 6.07 0 01-3.414 1.736l.069 2.076a8.122 8.122 0 004.798-2.35c3.148-3.172 3.186-8.291.122-11.531l1.741-1.754-5.51-.3z"
+              d="M19.315 10h-2.372v-.205c-.108-4.434-3.724-7.996-8.169-7.996C4.259 1.799.6 5.471.6 10s3.659 8.199 8.174 8.199a8.13 8.13 0 005.033-1.738l-1.406-1.504a6.099 6.099 0 01-3.627 1.193c-3.386 0-6.131-2.754-6.131-6.15s2.745-6.15 6.131-6.15c3.317 0 6.018 2.643 6.125 5.945V10h-2.672l3.494 3.894L19.315 10z"
             />
           </svg>
         </button>
@@ -135,7 +140,7 @@
 </template>
 
 <script>
-import { ipcRenderer, dialog } from "electron";
+import { ipcRenderer } from "electron";
 
 export default {
   name: "Home",
@@ -154,38 +159,17 @@ export default {
   created() {
     ipcRenderer.send("online-status", this.isOnline());
 
-    this.getCoronaData()
-      .then(response => {
-        this.total = response.total;
-
-        this.deaths = response.deaths;
-        this.confirmed = response.confirmed;
-        this.recovered = response.recovered;
-
-        this.country = response.country;
-      })
-      .then(() => {
-        this.sections = [
-          {
-            label: `Deaths: ${this.deaths}`,
-            value: this.deaths
-          },
-          {
-            label: `Confirmed: ${this.confirmed}`,
-            value: this.confirmed
-          },
-          {
-            label: `Recovered: ${this.recovered}`,
-            value: this.recovered
-          }
-        ];
-      })
+    this.getCoronaData("corona-data")
+      .then(response => this.dataObject(response))
+      .then(() => this.chartObject())
       .then(() => (this.loading = false))
-      .catch(error =>
-        dialog.showErrorBox(
-          `An error occurred during data management. ${error.toString()}`
-        )
-      );
+      .catch(error => alert(error));
+
+    ipcRenderer.on("refresh-back", (event, response) => {
+      this.dataObject(response);
+      this.chartObject();
+      this.loading = false;
+    });
   },
 
   methods: {
@@ -193,17 +177,51 @@ export default {
       ipcRenderer.send("close-app");
     },
 
+    refresh() {
+      this.loading = true;
+
+      ipcRenderer.send("refresh", this.isOnline());
+    },
+
     isOnline() {
       return window.navigator.onLine ? true : false;
     },
 
-    getCoronaData() {
+    getCoronaData(listener) {
       return new Promise((resolve, reject) => {
-        ipcRenderer.on("corona-data", (event, data) => {
-          resolve(data);
+        ipcRenderer.on(listener, (event, data) => {
+          if (data) resolve(data);
+
           reject(new Error());
         });
       });
+    },
+
+    dataObject(response) {
+      this.total = response.total;
+
+      this.deaths = response.deaths;
+      this.confirmed = response.confirmed;
+      this.recovered = response.recovered;
+
+      this.country = response.country;
+    },
+
+    chartObject() {
+      this.sections = [
+        {
+          label: `Deaths: ${this.deaths}`,
+          value: this.deaths
+        },
+        {
+          label: `Confirmed: ${this.confirmed}`,
+          value: this.confirmed
+        },
+        {
+          label: `Recovered: ${this.recovered}`,
+          value: this.recovered
+        }
+      ];
     }
   }
 };

@@ -79,7 +79,10 @@
                 />
               </svg>
               <p class="ml-1 text-sm">
-                <span class="text-xl font-bold">368</span>
+                <span
+                  class="text-xl font-bold"
+                  v-text="daily.totalConfirmed"
+                ></span>
                 Confirmed
               </p>
             </div>
@@ -90,16 +93,24 @@
                 />
               </svg>
               <p class="ml-1 text-sm">
-                <span class="text-xl font-bold">1510</span>
+                <span
+                  class="text-xl font-bold"
+                  v-text="daily.totalRecovered"
+                ></span>
                 Recovered
               </p>
             </div>
           </div>
-          <p class="mt-2">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Rerum,
-            repellendus!
-          </p>
-          <p class="italic text-right">07 March 2020</p>
+          <p
+            class="mt-2"
+            v-text="
+              `Total ${daily.mainlandChina} cases on China and ${daily.otherLocations} on the other location`
+            "
+          ></p>
+          <p
+            class="italic text-right"
+            v-text="new Date(daily.reportDateString).toDateString()"
+          ></p>
         </div>
       </div>
       <!-- Footer -->
@@ -152,7 +163,8 @@ export default {
       deaths: null,
       country: null,
       sections: [],
-      total: 0
+      total: 0,
+      daily: {}
     };
   },
 
@@ -205,6 +217,8 @@ export default {
       this.recovered = response.recovered;
 
       this.country = response.country;
+
+      this.daily = response.daily;
     },
 
     chartObject() {

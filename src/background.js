@@ -201,6 +201,17 @@ function getCoronaOverview(country) {
     );
 }
 
+function dailyGlobalUpdates() {
+  return axios
+    .get("https://covid19.mathdro.id/api/daily")
+    .then(response => response)
+    .catch(error =>
+      dialog.showErrorBox(
+        `An error occurred during latest update dection. ${error.toString()}`
+      )
+    );
+}
+
 function dataManipulate(event, channel, online) {
   let data = {};
 
@@ -218,6 +229,9 @@ function dataManipulate(event, channel, online) {
           })
           .then(() => {
             data.total = data.deaths + data.confirmed + data.recovered;
+          })
+          .then(async () => {
+            data.daily = (await dailyGlobalUpdates()).data.pop();
           })
       )
       .then(() => {
@@ -237,6 +251,13 @@ function dataManipulate(event, channel, online) {
       data.confirmed = 0;
       data.recovered = 0;
       data.total = 0;
+      data.daily = {
+        totalConfirmed: 0,
+        totalRecovered: 0,
+        reportDateString: new Date().toLocaleDateString(),
+        mainlandChina: 0,
+        otherLocations: 0
+      };
 
       event.reply(channel, data);
     }

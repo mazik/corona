@@ -10,7 +10,7 @@
   "repository": {
     "url": "http://github.com/mazik/corona"
   },
-  "license": "GPLv3",
+  "license": "mit",
   "homepage": "http://github.com/mazik/corona",
   "version": "0.1.0",
   "private": true,

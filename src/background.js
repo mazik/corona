@@ -5,6 +5,7 @@
 import path from "path";
 import axios from "axios";
 import settings from "electron-settings";
+import { autoUpdater } from "electron-updater";
 import { app, protocol, BrowserWindow, Tray, ipcMain, dialog } from "electron";
 import {
   createProtocol,
@@ -52,6 +53,7 @@ function createWindow() {
     createProtocol("app");
     // Load the index.html when not in development
     win.loadURL("app://./index.html");
+    autoUpdater.checkForUpdatesAndNotify();
   }
 
   win.on("closed", () => {

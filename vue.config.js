@@ -9,6 +9,9 @@ module.exports = {
   },
   pages: {
     index: "src/main.js",
-    subpage: "src/subpage/main.js"
+    subpage: {
+      entry: "src/subpage/main.js",
+      title: "Corona - Settings"
+    }
   }
 };

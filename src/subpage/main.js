@@ -1,6 +1,7 @@
 import Vue from "vue";
+import App from "./App.vue";
 Vue.config.productionTip = false;
 
 new Vue({
-  render: h => h("div", "Welcome to the second page!")
+  render: h => h(App)
 }).$mount("#app");

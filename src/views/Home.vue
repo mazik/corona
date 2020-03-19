@@ -163,6 +163,7 @@ export default {
       recovered: null,
       deaths: null,
       country: null,
+      countryCode: null,
       sections: [],
       total: 0,
       daily: {}
@@ -215,15 +216,16 @@ export default {
     },
 
     dataObject(response) {
-      this.total = response.total;
+      this.total = response.corona.total;
 
-      this.deaths = response.deaths;
-      this.confirmed = response.confirmed;
-      this.recovered = response.recovered;
+      this.deaths = response.corona.deaths;
+      this.confirmed = response.corona.confirmed;
+      this.recovered = response.corona.recovered;
 
-      this.country = response.country;
+      this.country = response.corona.country;
+      this.countryCode = response.corona.countryCode;
 
-      this.daily = response.daily;
+      this.daily = response.corona.daily;
     },
 
     chartObject() {
@@ -233,12 +235,12 @@ export default {
           value: this.deaths
         },
         {
-          label: `Confirmed: ${this.confirmed}`,
-          value: this.confirmed
-        },
-        {
           label: `Recovered: ${this.recovered}`,
           value: this.recovered
+        },
+        {
+          label: `Confirmed: ${this.confirmed}`,
+          value: this.confirmed
         }
       ];
     }

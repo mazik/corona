@@ -161,6 +161,32 @@ ipcMain.on("refresh", (event, isOnline) => {
   dataManipulate(event, "refresh-back", isOnline);
 });
 
+ipcMain.on("get-all-countries", async (event, isOnline) => {
+  let allCountries;
+
+  if (isOnline) {
+    if (settings.has("countries")) {
+      allCountries = settings.get("countries");
+    } else {
+      allCountries = await getAllCountries();
+      settings.set("countries", allCountries);
+    }
+  } else {
+    if (settings.has("countries")) {
+      allCountries = settings.get("countries");
+    } else {
+      allCountries = { countries: { Mars: "None" } };
+    }
+  }
+
+  event.reply("send-all-countries", { countries: allCountries });
+});
+
+ipcMain.on("manual-country-selection", (event, countryCode, locateStyle) => {
+  settings.set("corona.countryCode", countryCode);
+  settings.set("corona.countryLocate", locateStyle);
+});
+
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
   if (process.platform === "win32") {
@@ -231,7 +257,7 @@ function getWindowPosition() {
 function getCountry() {
   return axios
     .get("http://ip-api.com/json")
-    .then(response => response.data.country)
+    .then(response => response.data)
     .catch(error =>
       dialog.showErrorBox(
         `An error occurred during Country detection. ${error.toString()}`
@@ -239,9 +265,22 @@ function getCountry() {
     );
 }
 
-function getCoronaOverview(country) {
+function getAllCountries() {
   return axios
-    .get(`https://covid19.mathdro.id/api/countries/${country.toLowerCase()}`)
+    .get("https://covid19.mathdro.id/api/countries")
+    .then(response => response.data.countries)
+    .catch(error =>
+      dialog.showErrorBox(
+        `An error occurred during Countries listing. ${error.toString()}`
+      )
+    );
+}
+
+function getCoronaOverview(countryCode) {
+  return axios
+    .get(
+      `https://covid19.mathdro.id/api/countries/${countryCode.toLowerCase()}`
+    )
     .then(overview => overview.data)
     .catch(error =>
       dialog.showErrorBox(
@@ -264,51 +303,104 @@ function dailyGlobalUpdates() {
 function dataManipulate(event, channel, online) {
   let data = {};
 
-  if (online) {
-    getCountry()
-      .then(country => {
-        data.country = country;
-      })
-      .then(() =>
-        getCoronaOverview(data.country)
-          .then(overview => {
-            data.deaths = overview.deaths.value;
-            data.confirmed = overview.confirmed.value;
-            data.recovered = overview.recovered.value;
-          })
-          .then(() => {
-            data.total = data.deaths + data.confirmed + data.recovered;
-          })
-          .then(async () => {
-            data.daily = (await dailyGlobalUpdates()).data.pop();
-          })
-      )
-      .then(() => {
-        settings.setAll(data);
-      })
-      .then(() => {
-        event.reply(channel, data);
-      });
-  } else {
-    if (settings.has("country")) {
-      data = settings.getAll();
+  if (settings.get("corona.countryLocate") == "manual") {
+    const countryCode = settings.get("corona.countryCode");
 
-      event.reply(channel, data);
+    if (online) {
+      getCoronaOverview(countryCode)
+        .then(overview => {
+          data.deaths = overview.deaths.value;
+          data.confirmed = overview.confirmed.value;
+          data.recovered = overview.recovered.value;
+        })
+        .then(() => {
+          data.total = data.deaths + data.confirmed + data.recovered;
+        })
+        .then(() => {
+          data.country = countryCode;
+          data.countryCode = countryCode;
+        })
+        .then(async () => {
+          data.daily = (await dailyGlobalUpdates()).data.pop();
+        })
+        .then(() => {
+          settings.set("corona", data);
+          settings.set("corona.countryCode", countryCode);
+          settings.set("corona.countryLocate", "manual");
+        })
+        .then(() => event.reply(channel, { corona: data }))
+        .catch(error => dialog.showErrorBox(error));
     } else {
-      data.country = "Mars";
-      data.deaths = 0;
-      data.confirmed = 0;
-      data.recovered = 0;
-      data.total = 0;
-      data.daily = {
-        totalConfirmed: 0,
-        totalRecovered: 0,
-        reportDateString: new Date().toLocaleDateString(),
-        mainlandChina: 0,
-        otherLocations: 0
-      };
+      if (settings.get("corona.countryCode") == countryCode) {
+        data = settings.get("corona");
 
-      event.reply(channel, data);
+        event.reply(channel, { corona: data });
+      } else {
+        data.country = "Mars";
+        data.deaths = 0;
+        data.confirmed = 0;
+        data.recovered = 0;
+        data.total = 0;
+        data.daily = {
+          totalConfirmed: 0,
+          totalRecovered: 0,
+          reportDateString: new Date().toLocaleDateString(),
+          mainlandChina: 0,
+          otherLocations: 0
+        };
+
+        event.reply(channel, { corona: data });
+      }
+    }
+  } else {
+    if (online) {
+      getCountry()
+        .then(country => {
+          data.country = country.country;
+          data.countryCode = country.countryCode;
+        })
+        .then(() =>
+          getCoronaOverview(data.countryCode)
+            .then(overview => {
+              data.deaths = overview.deaths.value;
+              data.confirmed = overview.confirmed.value;
+              data.recovered = overview.recovered.value;
+            })
+            .then(() => {
+              data.total = data.deaths + data.confirmed + data.recovered;
+            })
+            .then(async () => {
+              data.daily = (await dailyGlobalUpdates()).data.pop();
+            })
+            .catch(error => dialog.showErrorBox(error))
+        )
+        .then(() => {
+          settings.set("corona", data);
+        })
+        .then(() => {
+          event.reply(channel, { corona: data });
+        });
+    } else {
+      if (settings.has("corona.country")) {
+        data = settings.get("corona");
+
+        event.reply(channel, { corona: data });
+      } else {
+        data.country = "Mars";
+        data.deaths = 0;
+        data.confirmed = 0;
+        data.recovered = 0;
+        data.total = 0;
+        data.daily = {
+          totalConfirmed: 0,
+          totalRecovered: 0,
+          reportDateString: new Date().toLocaleDateString(),
+          mainlandChina: 0,
+          otherLocations: 0
+        };
+
+        event.reply(channel, { corona: data });
+      }
     }
   }
 }

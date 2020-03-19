@@ -116,6 +116,7 @@
       <!-- Footer -->
       <div class="bg-gray-300 p-1 text-gray-700 flex justify-between">
         <button
+          @click="settings()"
           class="appearance-none outline-none focus:shadow-outline"
           title="Settings"
         >
@@ -187,6 +188,10 @@ export default {
   methods: {
     close() {
       ipcRenderer.send("close-app");
+    },
+
+    settings() {
+      ipcRenderer.send("settings", this.isOnline());
     },
 
     refresh() {

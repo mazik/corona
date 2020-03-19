@@ -6,5 +6,9 @@ module.exports = {
         publish: ["github"]
       }
     }
+  },
+  pages: {
+    index: "src/main.js",
+    subpage: "src/subpage/main.js"
   }
 };

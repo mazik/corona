@@ -17,6 +17,9 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
 let tray;
+let settingsWindow;
+let isSettingsWindowShow;
+let closed;
 
 // Don't show the app in the doc
 app.dock.hide();
@@ -35,9 +38,9 @@ function createWindow() {
     height: 560,
     show: false,
     frame: false,
-    fullscreenable: false,
     resizable: false,
     transparent: true,
+    fullscreenable: false,
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/configuration.html#node-integration for more info
@@ -61,7 +64,43 @@ function createWindow() {
   });
 
   win.on("blur", () => {
-    if (!win.webContents.isDevToolsOpened()) win.hide();
+    if (!win.webContents.isDevToolsOpened() && !isSettingsWindowShow)
+      win.hide();
+  });
+}
+
+function createSettingsWindow() {
+  settingsWindow = new BrowserWindow({
+    width: 320,
+    height: 250,
+    show: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    webPreferences: {
+      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
+    }
+  });
+
+  if (process.env.WEBPACK_DEV_SERVER_URL) {
+    settingsWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL + "subpage");
+    if (!process.env.IS_TEST) settingsWindow.webContents.openDevTools();
+  } else {
+    createProtocol("app");
+    settingsWindow.loadURL("app://./subpage.html");
+  }
+
+  settingsWindow.on("close", event => {
+    if (!closed) event.preventDefault();
+    isSettingsWindowShow = false;
+    settingsWindow.hide();
+  });
+
+  settingsWindow.on("closed", () => {
+    if (closed) {
+      settingsWindow = null;
+    }
   });
 }
 
@@ -101,10 +140,17 @@ app.on("ready", async () => {
   }
   createTray();
   createWindow();
+  createSettingsWindow();
 });
 
 ipcMain.on("close-app", () => {
+  closed = true;
   app.quit();
+});
+
+ipcMain.on("settings", () => {
+  isSettingsWindowShow = true;
+  settingsWindow.show();
 });
 
 ipcMain.on("online-status", (event, isOnline) => {

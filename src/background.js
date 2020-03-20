@@ -11,6 +11,11 @@ import {
   createProtocol,
   installVueDevtools
 } from "vue-cli-plugin-electron-builder/lib";
+
+const appFolder = path.dirname(process.execPath);
+const updateExe = path.resolve(appFolder, "..", "Update.exe");
+const exeName = path.basename(process.execPath);
+
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -141,6 +146,8 @@ app.on("ready", async () => {
   createTray();
   createWindow();
   createSettingsWindow();
+
+  if (!isDevelopment) launchAtStartup();
 });
 
 ipcMain.on("close-app", () => {
@@ -187,6 +194,10 @@ ipcMain.on("manual-country-selection", (event, countryCode, locateStyle) => {
   settings.set("corona.countryLocate", locateStyle);
 });
 
+ipcMain.on("open-at-login", (event, isOpenAtLogin) => {
+  settings.set("settings.isOpenAtLogin", isOpenAtLogin);
+});
+
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
   if (process.platform === "win32") {
@@ -221,6 +232,35 @@ function makeSingleInstance() {
       win.focus();
     }
   });
+}
+
+function launchAtStartup() {
+  let isOpenAtLogin;
+
+  if (!settings.has("settings.isOpenAtLogin")) {
+    isOpenAtLogin = true;
+  } else {
+    isOpenAtLogin = settings.get("settings.isOpenAtLogin");
+  }
+
+  if (process.platform === "darwin") {
+    app.setLoginItemSettings({
+      openAtLogin: isOpenAtLogin,
+      openAsHidden: true
+    });
+  } else {
+    app.setLoginItemSettings({
+      openAtLogin: isOpenAtLogin,
+      openAsHidden: true,
+      path: updateExe,
+      args: [
+        "--processStart",
+        `"${exeName}"`,
+        "--process-start-args",
+        `"--hidden"`
+      ]
+    });
+  }
 }
 
 function createTray() {

@@ -42,7 +42,11 @@
       <div>
         <div>
           <label class="block text-gray-700">
-            <input class="mr-2 leading-tight" type="checkbox" />
+            <input
+              v-model="openAtLogin"
+              class="mr-2 leading-tight"
+              type="checkbox"
+            />
             <span class="text-sm">
               Launch at startup
             </span>
@@ -87,6 +91,7 @@ export default {
     return {
       country: "",
       countries: null,
+      openAtLogin: true,
       automaticCountryDetection: true,
       settings: false
     };
@@ -112,6 +117,8 @@ export default {
       } else {
         ipcRenderer.send("manual-country-selection", this.country, "auto");
       }
+
+      ipcRenderer.send("open-at-login", this.openAtLogin);
 
       const fade = setTimeout(() => {
         this.settings = false;

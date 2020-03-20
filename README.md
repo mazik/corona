@@ -1,8 +1,9 @@
-<center>
+<p align="center">
   <img src="/build/icons/128x128.png" width="128" title="Corona Desktop Electron App" alt="Corona app">
-  	<h1>CORONA: COVID-19</h1>
-  	A desktop tray application based on Electron and VueJS to stay up to date with the latest Corona: COVID-19 virus information.
-</center>
+</p>
+
+<h1 align="center">CORONA: COVID-19</h1>
+A desktop tray application based on Electron and VueJS to stay up to date with the latest Corona: COVID-19 virus information.
 
 ## Why?
 Coronavirus isn't just a regular flu that will simply go away. It is 2020, the modern tech world and we are still struggling to protect our family against this.
@@ -11,9 +12,9 @@ As soon as I saw the [COVID-19 API](https://github.com/mathdroid/covid-19-api), 
 
 ## Interface
 It's not that much but wanted to make something simple and lightweight using [Tailwind CSS](https://tailwindcss.com).
-<center>
-  <img src="Interface.png" title="Corona Desktop Electron App" alt="Corona application">
-</center>
+<p align="center">
+  <img src="Interface.png" width="350" title="Corona Desktop Electron App" alt="Corona application">
+</p>
 
 ## Features
 I have always wanted to keep the app simple to make sure it loads faster (as we all know Electron is a resource heavy technology) but still get the most out of the data.

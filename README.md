@@ -31,9 +31,14 @@ I have always wanted to keep the app simple to make sure it loads faster (as we 
  - Auto launch on system reboot
  - Refresh the data to get the most recent update
 
+ ## Download
+ Download can be performed for both of the Mac, Windows, and Linux operating systems directly from the [releases](https://github.com/mazik/corona/releases) section.
+
 ## Caution
 
 The source codes are bit of nasty and there's no unit test for the app as I wanted to make something very quickly. So, there's a lot of places for improvements. So, if you do look at the source code, please do feel free to send a pull request :)
+
+When installing the app, you may see warning from your operating system. You can safely ignore this as the warning is only because the app wasn't signed as code signing requires 💵.
 
 ## Project setup
 ```shell

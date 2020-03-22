@@ -40,6 +40,8 @@ The source codes are bit of nasty and there's no unit test for the app as I want
 
 When installing the app, you may see warning from your operating system. You can safely ignore this as the warning is only because the app wasn't signed as code signing requires 💵.
 
+While the installation executables are available for both Mac, Windows, and Linux, the app was specifically tested on Mac. So, you may experience unexpected issues while using it on Windows and Linux. So, if you do so, please do feel free to submit a bug report or a pull request would be highly appreciated 👏.
+
 ## Project setup
 ```shell
 yarn install

@@ -27,7 +27,7 @@ let isSettingsWindowShow;
 let closed;
 
 // Don't show the app in the doc
-app.dock.hide();
+if (process.platform === "darwin") app.dock.hide();
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -40,11 +40,11 @@ function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({
     width: 320,
-    height: 560,
+    height: 545,
     show: false,
     frame: false,
     resizable: false,
-    transparent: true,
+    skipTaskbar: true,
     fullscreenable: false,
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone

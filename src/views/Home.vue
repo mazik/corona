@@ -105,7 +105,7 @@
           ></p>
           <p
             class="italic text-right"
-            v-text="new Date(daily.reportDateString).toDateString()"
+            v-text="new Date(daily.reportDate).toDateString()"
           ></p>
         </div>
       </div>
